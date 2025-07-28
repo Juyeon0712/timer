@@ -94,7 +94,7 @@ with col_left:
     with status_col3:
         st.markdown(f"<p style='text-align:right;'><strong>{int(progress*100)}%</strong></p>",unsafe_allow_html=True)
 
-    st.markdown("<style>
+    st.markdown("""<style>
     .stColumns > div {
         display: flex;
         justify-content: center;
@@ -104,7 +104,7 @@ with col_left:
     """, unsafe_allow_html=True)
 
 
-    st. markdown(f"<div class='timer-time' style='text-align':center font size: 4rem; font-weight: bold; 
+    st. markdown(f"""<div class='timer-time' style='text-align':center font size: 4rem; font-weight: bold; 
                  margin: 2rem 0;"> 
         {format_time(st.session_state.remaining_seconds)}
     </div>
@@ -112,6 +112,6 @@ with col_left:
 
 # margin 공백 
 
-    st.session_state.total_seconds</style>")
+
 with col_right:
     pass
