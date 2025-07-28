@@ -60,6 +60,13 @@ def get_timer_status():
     else:
         return "stopped"
 
+def format_time(second):
+    hours= second//3600
+    minutes= (second%3600)//60
+    seconds= second%60
+    return= f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
 current_status = get_timer_status()
 update_timer()
 
@@ -87,6 +94,24 @@ with col_left:
     with status_col3:
         st.markdown(f"<p style='text-align:right;'><strong>{int(progress*100)}%</strong></p>",unsafe_allow_html=True)
 
-    
+    st.markdown("<style>
+    .stColumns > div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+        </style>
+    """, unsafe_allow_html=True)
+
+
+    st. markdown(f"<div class='timer-time' style='text-align':center font size: 4rem; font-weight: bold; 
+                 margin: 2rem 0;"> 
+        {format_time(st.session_state.remaining_seconds)}
+    </div>
+    """, unsafe_allow_html=True)
+
+# margin 공백 
+
+    st.session_state.total_seconds</style>")
 with col_right:
     pass
