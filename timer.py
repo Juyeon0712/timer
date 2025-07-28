@@ -67,7 +67,7 @@ col_left, col_right = st.columns(2)
 
 with col_left:
     if st.session_state.total_seconds>=0:
-        progress=st.session_state.remaining_seconds/st.session_state_total_seconds
+        progress=st.session_state.remaining_seconds/st.session_state.total_seconds
         progress=max(0, min(1,progress)) #진행률이 0~1사이의 값만 출력이 되도록  진행률이 1을 넘지 못하게
     else:
         progress=0
