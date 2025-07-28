@@ -51,7 +51,7 @@ def get_timer_status():
     if st.session_state.timer_completed:
         return "completed"
     #타이머가 진행중이고 정지 버튼을 누르지 않았을 때
-    elif t.session_state.timer_running and not st.session_state.timer_paused:
+    elif st.session_state.timer_running and not st.session_state.timer_paused:
         return "completed"
     #타이머 정지 버튼을 눌렀을 때
     elif t.session_state.timer_paused:
