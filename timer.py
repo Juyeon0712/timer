@@ -82,10 +82,10 @@ with col_left:
             st.markdown('타이머', help="타이머가 일시 정지 되었습니다!")
         elif current_status=="copleted":
             st.markdown('타이머', help="타이머가 완료되었습니다!")
-        else current_status=="running":
+        else:
             st.markdown('타이머', help="타이머가 대기중입니다!")
     with status_col3:
-        st.markdown(f"{int(progress*100)%}")
+        st.markdown(f"{int(progress*100)}%")
 
 with col_right:
     pass
