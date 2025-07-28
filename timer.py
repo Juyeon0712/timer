@@ -64,7 +64,7 @@ def format_time(second):
     hours= second//3600
     minutes= (second%3600)//60
     seconds= second%60
-    return= f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 
 current_status = get_timer_status()
