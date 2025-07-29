@@ -33,7 +33,7 @@ if 'remaining_seconds' not in st.session_state:
 if 'pause_start_time' not in st.session_state:
     st.session_state.pause_start_time=None
 if 'select_music' not in st.session_state:
-    st.session_state.select_music='없음' #none이라고 해서 오류가 났던거임.
+    st.session_state.select_music='없음' # none이라고 해서 오류가 났던거임.
 if 'music_auto_play' not in st.session_state:
     st.session_state.music_auto_play=True
     
@@ -51,7 +51,6 @@ def update_timer():
             st.session_state.show_celebration=True
         else:
             st.session_state.remaining_seconds=remaining 
-
 
 def get_timer_status():
     #타이머가 완료되었을때
@@ -73,6 +72,20 @@ def format_time(second):
     seconds= second%60
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}" #00:35:00 한자리 숫자만 출력되는 경우 그 앞 빈자리에 0을 채워넣어라!
 
+def set_timer_duration(minutes):
+    st.session_state.total_seconds = minutes*60
+    st.session_state.remaining_seconds=minutes*60
+
+def reset_timer():
+
+    st.session_state.timer_running=False
+    st.session_state.timer_paused=False
+    st.session_state.start_time=None 
+    st.session_state.total_pause_time=0
+    st.session_state.timer_completed=False
+    st.session_state.show_celebration=False
+    st.session_state.pause_start_time=None
+    st.session_state.music_auto_play=True
 
 update_timer()
 current_status = get_timer_status()
@@ -211,9 +224,7 @@ with col_left:
 
     st.markdown('</div>', unsafe_allow_html=True) 
 
-    if st.session_state.timer_running and not st.session_state.timer_paused and not st.session_state.timer_completed:
-        time.sleep(1)
-        st.rerun()
+
 
     #배경음악 설정 UI 만들기
     #select box = ['없음', '1', '2', '3']
@@ -247,7 +258,7 @@ with col_left:
         try:
             audio_file_path= background_music[st.session_state.select_music]
             st.audio(audio_file_path, format='audio/mpeg'
-            ,loop=True, autoplay=st.session_state.music_auto_paly)
+            ,loop=True, autoplay=st.session_state.music_auto_play)
         except Exception as e:
             st.warning(f"음악 파일을 찾을 수 없습니다:{audio_file_path}")
 
@@ -255,4 +266,88 @@ with col_left:
     st.session_state.music_auto_play=auto_play
 
 with col_right:
-    pass
+    # 타이머 프리셋 데이터
+    timer_presets = {
+        "5분": 5,
+        "15분": 15,
+        "25분": 25,
+        "30분": 30,
+        "45분": 45,
+        "60분": 60
+    }
+
+    st.markdown("**타이머 설정**")
+    st.markdown("**빠른 타이머 설정**", help="자주 사용하는 시간으로 빠르게 설정하세요.")
+
+    p1, p2, p3=st.columns(3)
+
+   
+    preset_buttons = [
+        (p1,["5분","30분"]),
+        (p2,["15분","45분"]),
+        (p3,["25분","60분"])
+    ]
+
+    #순회하면서 만들거
+    for col, p in preset_buttons:
+        with col:
+            for preset in p:
+                if st.button(preset,key=f"preset_{preset}"):
+                    minutes = timer_presets[preset]
+                    set_timer_duration(minutes)
+                    reset_timer()
+                    st.toast(f"{preset} 설정 완료")
+                    time.sleep(0.5)
+                    st.rerun()
+
+    st.divider()
+
+    
+    c1,c2 = st.columns([0.8,0.2])
+
+    with c1:
+        st.markdown("**사용자 설정(분)**")
+    with c2:
+        st.markdown(f"<p style='text-align:right;'><strong> {st.session_state.total_seconds//60}분</strong></p>",
+        unsafe_allow_html=True)
+
+    slider_m =st.slider("타이머 시간", 1,120,st.session_state.total_seconds//60,
+    help="1분부터 120분까지 설정 가능합니다.")
+
+    if st.button('설정 적용', type="primary"):
+        set_timer_duration(slider_m)
+        reset_timer()
+        st.toast(f"{slider_m}분 설정완료!")
+        time.sleep(0.5)
+        st.rerun()
+
+    st.divider()
+
+   
+    st.markdown("**⏱️타이머 상세 설정(시:분:초)**")
+
+    col1,col2,col3= st.columns(3)
+    with col1:
+        st.markdown("**시간**")
+        hours=st.number_input("시간",min_value=0, max_value=23, value=st.session_state.total_seconds//3600)
+    with col2:
+        st.markdown("**분**")
+        minutes = st.number_input("분", min_value=0, max_value=59, value=(st.session_state.total_seconds%3600)//60)
+    with col3:
+        st.markdown("**초**")
+        seconds = st.number_input("초", min_value=0, max_value=59, value=(st.session_state.total_seconds%60))
+
+
+    if st.button("⚙️상세설정 적용", type="primary"):
+        st.session_state.total_seconds = hours * 3600 + minutes * 60 + seconds
+        st.session_state.remaining_seconds = st.session_state.total_seconds
+        reset_timer()
+        st.rerun()
+
+st.divider()
+st.markdown(f"<p style='text-align:center;'><strong> @Juyeon All rights reserved</strong></p>",
+unsafe_allow_html=True)
+
+if st.session_state.timer_running and not st.session_state.timer_paused and not st.session_state.timer_completed:
+        time.sleep(1) #1초에 1번씩 재실행
+        st.rerun()
