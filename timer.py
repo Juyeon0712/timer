@@ -35,7 +35,7 @@ def update_timer():
     if st.session_state.timer_running and not st.session_state.timer_paused: #타이머가 실행중
         current_time=time.time()
         elapsed= current_time-st.session_state.start_time-st.session_state.total_pause_time
-        remaining= st.session_state_total_seconds-int(elapsed)
+        remaining= st.session_state.total_seconds-int(elapsed)
 
         if remaining<=0:
             st.session_state.remaining_seconds=0
@@ -45,14 +45,14 @@ def update_timer():
         else:
             st.session_state.remaining_seconds=remaining
 
-
+# 현재 타이머의 상태가 무엇인지 문자열로 알려주는 함
 def get_timer_status():
     #타이머가 완료되었을때
     if st.session_state.timer_completed:
         return "completed"
     #타이머가 진행중이고 정지 버튼을 누르지 않았을 때
     elif st.session_state.timer_running and not st.session_state.timer_paused:
-        return "completed"
+        return "running"
     #타이머 정지 버튼을 눌렀을 때
     elif st.session_state.timer_paused:
         return "paused"
