@@ -23,13 +23,15 @@ if 'start_time' not in st.session_state:
 if 'total_pause_time' not in st.session_state:
     st.session_state.total_pause_time=0
 if 'total_seconds' not in st.session_state:
-    st.session_state.total_seconds=25*60
+    st.session_state.total_seconds=70
 if 'timer_completed' not in st.session_state:
     st.session_state.timer_completed=False
 if 'show_celebration' not in st.session_state:
     st.session_state.show_celebration=False
 if 'remaining_seconds' not in st.session_state:
-    st.session_state.remaining_seconds=25*60
+    st.session_state.remaining_seconds=70
+if 'pause_start_time' not in st.session_state:
+    st.session_state.pause_start_time=None
 
 def update_timer():
     if st.session_state.timer_running and not st.session_state.timer_paused: #타이머가 실행중
@@ -43,16 +45,16 @@ def update_timer():
             st.session_state.timer_completed=True
             st.session_state.show_celebration=True
         else:
-            st.session_state.remaining_seconds=remaining
+            st.session_state.remaining_seconds=remaining 
 
-# 현재 타이머의 상태가 무엇인지 문자열로 알려주는 함
+
 def get_timer_status():
     #타이머가 완료되었을때
     if st.session_state.timer_completed:
         return "completed"
     #타이머가 진행중이고 정지 버튼을 누르지 않았을 때
     elif st.session_state.timer_running and not st.session_state.timer_paused:
-        return "running"
+        return "completed"
     #타이머 정지 버튼을 눌렀을 때
     elif st.session_state.timer_paused:
         return "paused"
@@ -60,28 +62,31 @@ def get_timer_status():
     else:
         return "stopped"
 
-def format_time(second):
+def format_time(second): 
     hours= second//3600
-    minutes= (second%3600)//60
+    minutes= (second%3600)//60 # %는 나머지
     seconds= second%60
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}" #00:35:00 한자리 숫자만 출력되는 경우 그 앞 빈자리에 0을 채워넣어라!
 
 
-current_status = get_timer_status()
 update_timer()
+current_status = get_timer_status()
 
 col_left, col_right = st.columns(2)
 
 with col_left:
+    st.markdown('<div class="timer-display">', unsafe_allow_html=True)
+     
+    #프로그레스 바를 만들어줌.
     if st.session_state.total_seconds>=0:
         progress=st.session_state.remaining_seconds/st.session_state.total_seconds
         progress=max(0, min(1,progress)) #진행률이 0~1사이의 값만 출력이 되도록  진행률이 1을 넘지 못하게
     else:
-        progress=0
+        progress=0 #진행률바가 비도록
     
-    st.progress(float(progress))
+    st.progress(float(progress)) #혹시 몰라 float자료형으로 변환
 
-    status_col1, status_col2, status_col3=st.columns(3)
+    status_col1, status_col2, status_col3=st.columns(3) #타이머 레이아웃도 3등분으로 해줌.
     with status_col1:
         if current_status=="running":
             st.markdown('**타이머**', help="타이머가 실행중입니다!")
@@ -93,6 +98,9 @@ with col_left:
             st.markdown('**타이머**', help="타이머가 대기중입니다!")
     with status_col3:
         st.markdown(f"<p style='text-align:right;'><strong>{int(progress*100)}%</strong></p>",unsafe_allow_html=True)
+        # text-align:right 오른쪽으로 붙을 수 있게 숫자가
+
+    
 
     st.markdown("""<style>
     .stColumns > div {
@@ -102,14 +110,117 @@ with col_left:
     }
         </style>
     """, unsafe_allow_html=True)
+    
 
+    #타이머 컬러 변경되도록
+    timer_color=""
+    if st.session_state.remaining_seconds<=60:
+        timer_color="#ff4444"
+    else:
+        timer_color="var(--primary-text-color)"
 
-    st. markdown(f"""<div class='timer-time' style='text-align:center; font-size: 4rem; font-weight: bold; margin: 2rem 0;'> 
+    #남은 시간을 포맷해서 뿌려줬다?
+    st. markdown(f"""<div class='timer-time' style='text-align:center; color:{timer_color};font-size: 4rem; font-weight: bold; margin: 2rem 0;'> 
         {format_time(st.session_state.remaining_seconds)}
     </div>
     """, unsafe_allow_html=True)
 
-# margin 공백 
+    # margin 공백 
+
+    if st.session_state.total_seconds>0:
+        col1, col2=st.columns(2)
+        with col1:
+            st.metric("설정시간", format_time(st.session_state.total_seconds)) #metric 지표를 보여줄 때(출력할 때 )많이 사용
+        with col2:
+            elapsed = st.session_state.total_seconds-st.session_state.remaining_seconds
+            st.metric("경과시간",format_time(elapsed))
+
+    if st.session_state.timer_completed and st.session_state.show_celebration:
+        st.balloons()
+        st.success("타이머가 완료되었습니다! 목표 시간을 달성했습니다!")
+
+    # #만약, timer_running 타이머가 진행중이고(True), timer_paused=False일때
+    # reamining_seconds가 10초 이하이고 0초보다 클때
+    # Error 10초 이하 남았습니다. st.error
+    # 남은 시간이 60초 이하이고 0초보다 클때
+    # warning 1분 이하 남았습니다. 
+    if st.session_state.timer_running and not st.session_state.timer_paused:
+        if st.session_state.remaining_seconds<=10 and st.session_state.remaining_seconds>0:
+            st.error("10초 이하 남았습니다.")
+        elif st.session_state.remaining_seconds<=60 and st.session_state.remaining_seconds>0:
+            st.warning("1분 이하 남았습니다.")
+
+
+
+
+
+    btn1, btn2, btn3= st.columns(3) #비율 [0.3,0.3,0.4]
+
+    with btn1:
+        if not st.session_state.timer_running and not st.session_state.timer_paused:
+            if st.button("▶️",help="시작", type="primary"):
+                st.session_state.timer_running=True
+                st.session_state.start_time=time.time() #현재 시각 저장
+                st.session_state.total_pause_time=0 #정지버튼 눌렀을 때 시간을 계산해준다?
+                st.session_state.timer_completed=False
+                st.success("타이머가 시작되었습니다!")
+                st.rerun()
+
+        elif st.session_state.timer_running and not st.session_state.timer_paused:
+            if st.button("⏸️",help="일시정지", type="primary"):
+                st.session_state.timer_paused=True
+                st.session_state.pause_start_time= time.time()
+                st.info("타이머가 일시정지되었습니다.")
+                st.rerun()
+        elif st.session_state.timer_paused:
+            if st.button("▶️",help="재개", type="primary"):
+                st.session_state.timer_paused=False
+                if st.session_state.pause_start_time:
+                    pause_duration= time.time()-st.session_state.pause_start_time
+                    st.session_state.total_pause_time += pause_duration #중지된 시간을 계속 더하는 것?
+                    st.session_state.pause_start_time=None
+                st.success("타이머가 재개되었습니다!")
+                st.rerun()
+    with btn2:
+         if st.button("🔁",help="리셋"):
+            st.session_state.timer_running=False
+            st.session_state.timer_paused=False
+            st.session_state.start_time=None 
+            st.session_state.total_pause_time=0
+            st.session_state.total_seconds=25*60
+            st.session_state.timer_completed=False
+            st.session_state.show_celebration=False
+            st.session_state.remaining_seconds=25*60
+            st.session_state.pause_start_time=None
+            st.info("타이머가 리셋되었습니다.")
+            st.rerun()
+    with btn3:
+       if st.button("1분 추가",help="1분 추가"):
+        st.session_state.remaining_seconds+=60
+        st.session_state.total_seconds+=60
+        if st.session_state.timer_completed:
+            st.session_state.timer_completed=False
+            st.session_state.show_celebration=False
+        st.toast("1분이 추가되었습니다!") #toast(깜빡이는 알림 팝업 알림처럼)
+        st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True) 
+
+    if st.session_state.timer_running and not st.session_state.timer_paused and not st.session_state.timer_completed:
+        time.sleep(1)
+        st.rerun()
+
+    #배경음악 설정 UI 만들기
+    #select box = ['없음', '1', '2', '3']
+    #st.toggle('음악 자동 재생')
+    #음악 다운로드해서 깃허브 올려준다(압축 풀고)
+
+    st.markdown("**🎵 배경음악**")
+    st.markdown("**음악 선택**")
+    select_music=st.selectbox(
+        "음악을 선택하세요:", 
+        options=['없음','1','2','3'],
+        label_visibility="collapsed")
 
 
 with col_right:
