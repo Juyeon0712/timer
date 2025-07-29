@@ -33,7 +33,7 @@ if 'remaining_seconds' not in st.session_state:
 if 'pause_start_time' not in st.session_state:
     st.session_state.pause_start_time=None
 if 'select_music' not in st.session_state:
-    st.session_state.select_music=None
+    st.session_state.select_music='없음' #none이라고 해서 오류가 났던거임.
 if 'music_auto_play' not in st.session_state:
     st.session_state.music_auto_play=True
     
@@ -240,7 +240,7 @@ with col_left:
         index=list(background_music.keys()).index(st.session_state.select_music),
         label_visibility="collapsed"
         )
-        
+
     st.session_state.select_music = select_music
 
     if st.session_state.select_music!='없음':
@@ -256,4 +256,3 @@ with col_left:
 
 with col_right:
     pass
-
