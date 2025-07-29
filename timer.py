@@ -32,6 +32,11 @@ if 'remaining_seconds' not in st.session_state:
     st.session_state.remaining_seconds=70
 if 'pause_start_time' not in st.session_state:
     st.session_state.pause_start_time=None
+if 'select_music' not in st.session_state:
+    st.session_state.select_music=None
+if 'music_auto_play' not in st.session_state:
+    st.session_state.music_auto_play=True
+    
 
 def update_timer():
     if st.session_state.timer_running and not st.session_state.timer_paused: #타이머가 실행중
@@ -217,11 +222,38 @@ with col_left:
 
     st.markdown("**🎵 배경음악**")
     st.markdown("**음악 선택**")
+
+      # 배경음악 리스트
+    background_music = {
+        "없음": None,
+        "Bubblegum Code-2": "./music/Bubblegum Code-2.mp3",
+        "Bubblegum Code": "./music/Bubblegum Code.mp3",
+        "Code in the Moonlight": "./music/Code in the Moonlight.mp3",
+        "Gentle Streams": "./music/Gentle Streams.mp3",
+        "Late Night Thoughts": "./music/Late Night Thoughts.mp3",
+        "Soft Light Waves": "./music/Soft Light Waves.mp3"
+    }
+
     select_music=st.selectbox(
         "음악을 선택하세요:", 
-        options=['없음','1','2','3'],
-        label_visibility="collapsed")
+        options=list(background_music.keys()),
+        index=list(background_music.keys()).index(st.session_state.select_music),
+        label_visibility="collapsed"
+        )
+        
+    st.session_state.select_music = select_music
 
+    if st.session_state.select_music!='없음':
+        try:
+            audio_file_path= background_music[st.session_state.select_music]
+            st.audio(audio_file_path, format='audio/mpeg'
+            ,loop=True, autoplay=st.session_state.music_auto_paly)
+        except Exception as e:
+            st.warning(f"음악 파일을 찾을 수 없습니다:{audio_file_path}")
+
+    auto_play = st.toggle("음악 자동재생",value=st.session_state.music_auto_play)
+    st.session_state.music_auto_play=auto_play
 
 with col_right:
     pass
+
